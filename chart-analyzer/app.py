@@ -72,9 +72,9 @@ st.markdown("""
 st.title("⚡ AI Market Co-Pilot")
 st.caption("Upload a chart screenshot to extract structure, key levels, and probabilistic scenarios.")
 
-api_key = st.secrets.get("GEMINI_API_KEY", "")
+api_key = st.secrets.get("AQ.Ab8RN6J-Ny6IeUZ5pDiZ9StDNP1B3SU8cJCHO1WhbQ93bOvAlQ", "")
 if not api_key:
-    api_key = st.text_input("Gemini API Key", type="password")
+    api_key = st.text_input("AQ.Ab8RN6J-Ny6IeUZ5pDiZ9StDNP1B3SU8cJCHO1WhbQ93bOvAlQ", type="password")
 
 uploaded_file = st.file_uploader("Upload Chart", type=["png", "jpg", "jpeg"])
 
@@ -110,7 +110,7 @@ if uploaded_file:
                 try:
                     client = genai.Client(api_key=api_key)
                     response = client.models.generate_content(
-                        model='gemini-2.5-flash',
+                        model='gemini-3.8-flash',
                         contents=[image, JSON_PROMPT]
                     )
                     
