@@ -72,9 +72,9 @@ st.markdown("""
 st.title("⚡ AI Market Co-Pilot")
 st.caption("Upload a chart screenshot to extract structure, key levels, and probabilistic scenarios.")
 
-api_key = st.secrets.get("AQ.Ab8RN6J-Ny6IeUZ5pDiZ9StDNP1B3SU8cJCHO1WhbQ93bOvAlQ", "")
+api_key = st.secrets.get("GEMINI_API_KEY", "")
 if not api_key:
-    api_key = st.text_input("AQ.Ab8RN6J-Ny6IeUZ5pDiZ9StDNP1B3SU8cJCHO1WhbQ93bOvAlQ", type="password")
+    api_key = st.text_input("Gemini API Key", type="password")
 
 uploaded_file = st.file_uploader("Upload Chart", type=["png", "jpg", "jpeg"])
 
