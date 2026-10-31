@@ -24,7 +24,6 @@ st.markdown("""
         color: #f1f5f9;
     }
 
-    /* Hide standard Streamlit header and decoration */
     header[data-testid="stHeader"] { display: none; }
     footer { display: none; }
     .block-container {
@@ -45,7 +44,7 @@ st.markdown("""
         font-weight: 600;
         padding: 5px 14px;
         border-radius: 9999px;
-        margin: 0 auto 14px auto;
+        margin-bottom: 14px;
     }
 
     /* Viewport / Reticle Frame */
@@ -78,36 +77,6 @@ st.markdown("""
         border-bottom-right-radius: 6px;
     }
 
-    /* Header Bar inside Viewport */
-    .chart-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 10px 10px 10px;
-    }
-    .ticker-name {
-        font-size: 1.05rem;
-        font-weight: 700;
-        color: #ffffff;
-        margin: 0;
-    }
-    .ticker-sub {
-        font-size: 0.75rem;
-        color: #718096;
-        font-weight: 600;
-        text-transform: uppercase;
-        margin: 0;
-    }
-    .live-badge {
-        font-size: 0.65rem;
-        font-weight: 700;
-        color: #4ade80;
-        background: rgba(34, 197, 94, 0.12);
-        padding: 3px 8px;
-        border-radius: 6px;
-        letter-spacing: 0.5px;
-    }
-
     /* Primary Decision Card */
     .signal-card {
         background: #111718;
@@ -115,7 +84,6 @@ st.markdown("""
         border-radius: 22px;
         padding: 22px;
         margin-bottom: 14px;
-        position: relative;
     }
     .signal-label {
         font-size: 0.7rem;
@@ -148,92 +116,4 @@ st.markdown("""
         font-size: 1.2rem;
         font-weight: 800;
     }
-    .badge-hold { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-    .badge-buy { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
-    .badge-sell { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-
-    .signal-desc {
-        color: #94a3b8;
-        font-size: 0.88rem;
-        line-height: 1.45;
-        margin: 0;
-    }
-
-    /* Key Levels */
-    .levels-card {
-        background: #111718;
-        border: 1px solid #1d2729;
-        border-radius: 18px;
-        padding: 16px 20px;
-        margin-bottom: 14px;
-    }
-    .level-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 0.88rem;
-        padding: 4px 0;
-    }
-    .level-title {
-        color: #cbd5e1;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 500;
-    }
-    .level-pill {
-        background: #172123;
-        border: 1px solid #27373a;
-        padding: 3px 12px;
-        border-radius: 8px;
-        font-weight: 700;
-        font-size: 0.85rem;
-    }
-
-    /* 2x2 Metric Grid */
-    .metric-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-bottom: 14px;
-    }
-    .grid-cell {
-        background: #111718;
-        border: 1px solid #1d2729;
-        border-radius: 16px;
-        padding: 14px 16px;
-    }
-    .grid-label {
-        color: #64748b;
-        font-size: 0.72rem;
-        font-weight: 600;
-        margin-bottom: 4px;
-    }
-    .grid-val {
-        color: #ffffff;
-        font-size: 1.05rem;
-        font-weight: 700;
-    }
-
-    /* Circular Shutter Button */
-    div.stButton > button {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-        border-radius: 9999px !important;
-        font-weight: 700 !important;
-        font-size: 1rem !important;
-        padding: 14px 28px !important;
-        border: none !important;
-        box-shadow: 0 0 24px rgba(255, 255, 255, 0.2) !important;
-        transition: all 0.2s ease !important;
-        margin-top: 6px !important;
-    }
-    div.stButton > button:hover {
-        transform: scale(1.02);
-        box-shadow: 0 0 30px rgba(255, 255, 255, 0.35) !important;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# Top Bar
-st.markdown('<div style="text-align:center
+    .badge-hold { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(2
