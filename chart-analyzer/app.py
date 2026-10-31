@@ -5,7 +5,12 @@ from PIL import Image
 import json
 import io
 
-st.set_page_config(page_title="Scanner Terminal", page_icon="⚡", layout="centered", initial_sidebar_state="collapsed")
+st.set_page_config(
+    page_title="Scanner Terminal",
+    page_icon="⚡",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
 
 # Custom Dark Trading UI CSS
 st.markdown("""<style>
@@ -45,7 +50,7 @@ uploaded_file = st.file_uploader("Upload or Capture Chart", type=["png", "jpg", 
 JSON_PROMPT = """Analyze this chart image and return ONLY a JSON object (no markdown, no backticks):
 {
   "pattern_detected": "Identified pattern or Structure Scan",
-  "signal": "HOLD" or "BUY" or "SELL",
+  "signal": "HOLD",
   "reasoning": "Clear 1-2 sentence breakdown of price behavior and what to wait for.",
   "resistance": "Price level or area",
   "support": "Price level or area",
@@ -69,7 +74,12 @@ if uploaded_file:
                 try:
                     img = raw_image.copy()
                     if max(img.size) > 1280:
-                        client = genai.Client(api_key=api_key)
+                        img.thumbnail((1280, 1280), Image.Resampling.LANCZOS)
+                    buffer = io.BytesIO()
+                    img.convert("RGB").save(buffer, format="JPEG", quality=80)
+                    optimized_img = Image.open(buffer)
+
+                    client = genai.Client(api_key=api_key)
                     response = client.models.generate_content(
                         model='gemini-2.5-flash',
                         contents=[optimized_img, JSON_PROMPT],
@@ -79,9 +89,6 @@ if uploaded_file:
                             response_mime_type="application/json"
                         )
                     )
-
-                    clean = response.text.strip().replace("```json", "").replace("```", "")
-                    data = json.loads(clean)
 
                     clean = response.text.strip().replace("```json", "").replace("```", "")
                     data = json.loads(clean)
