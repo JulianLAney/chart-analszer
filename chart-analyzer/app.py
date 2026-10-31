@@ -69,17 +69,19 @@ if uploaded_file:
                 try:
                     img = raw_image.copy()
                     if max(img.size) > 1280:
-                        img.thumbnail((1280, 1280), Image.Resampling.LANCZOS)
-                    buffer = io.BytesIO()
-                    img.convert("RGB").save(buffer, format="JPEG", quality=80)
-                    optimized_img = Image.open(buffer)
-
-                    client = genai.Client(api_key=api_key)
+                        client = genai.Client(api_key=api_key)
                     response = client.models.generate_content(
-                        model='gemini-3.8-flash',
+                        model='gemini-2.5-flash',
                         contents=[optimized_img, JSON_PROMPT],
-                        config=types.GenerateContentConfig(temperature=0.1, max_output_tokens=300)
+                        config=types.GenerateContentConfig(
+                            temperature=0.1,
+                            max_output_tokens=800,
+                            response_mime_type="application/json"
+                        )
                     )
+
+                    clean = response.text.strip().replace("```json", "").replace("```", "")
+                    data = json.loads(clean)
 
                     clean = response.text.strip().replace("```json", "").replace("```", "")
                     data = json.loads(clean)
