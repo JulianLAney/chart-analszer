@@ -45,44 +45,56 @@ div.stButton > button { background-color: #ffffff !important; color: #000000 !im
 st.markdown('<div style="text-align:center;"><span class="status-pill">● Pattern Engine Active</span></div>', unsafe_allow_html=True)
 
 api_key = st.secrets.get("GEMINI_API_KEY", "")
-uploaded_file = st.file_uploader("Upload or Capture Chart", type=["png", "jpg", "jpeg"])
 
-JSON_PROMPT = """Analyze this chart image and return ONLY a JSON object (no markdown, no backticks):
+# Multi-file uploader for multi-timeframe analysis
+uploaded_files = st.file_uploader("Upload Chart Screenshot(s)", type=["png", "jpg", "jpeg"], accept_multiple_files=True)
+
+JSON_PROMPT = """Analyze the provided chart image(s) across any visible timeframes and return ONLY a valid JSON object matching this schema (no code blocks, no backticks, no markdown):
 {
-  "pattern_detected": "Identified pattern or Structure Scan",
-  "signal": "HOLD",
-  "reasoning": "Clear 1-2 sentence breakdown of price behavior and what to wait for.",
-  "resistance": "Price level or area",
-  "support": "Price level or area",
+  "pattern_detected": "Identified pattern, structure, or setup name",
+  "signal": "HOLD" or "BUY" or "SELL",
+  "reasoning": "Clear 1-2 sentence breakdown of price behavior, multi-timeframe alignment, and the exact trigger/confirmation required.",
+  "resistance": "Key resistance price or zone",
+  "support": "Key support price or zone",
   "trend": "Bullish / Bearish / Sideways",
   "volatility": "Low / Medium / High",
   "volume": "Low / Average / High",
   "sentiment": "Bullish / Bearish / Neutral"
 }"""
 
-if uploaded_file:
-    raw_image = Image.open(uploaded_file)
+if uploaded_files:
+    optimized_images = []
+    
+    # Render all uploaded screenshots inside the styled viewport container
     st.markdown('<div class="viewport-box">', unsafe_allow_html=True)
-    st.image(raw_image, use_container_width=True)
+    for idx, file in enumerate(uploaded_files):
+        img = Image.open(file)
+        st.image(img, caption=f"Chart {idx + 1}" if len(uploaded_files) > 1 else None, use_container_width=True)
+        
+        # Optimize dimensions and compress in memory to maintain low latency
+        img_copy = img.copy()
+        if max(img_copy.size) > 1280:
+            img_copy.thumbnail((1280, 1280), Image.Resampling.LANCZOS)
+        buffer = io.BytesIO()
+        img_copy.convert("RGB").save(buffer, format="JPEG", quality=80)
+        optimized_images.append(Image.open(buffer))
     st.markdown('</div>', unsafe_allow_html=True)
 
-    if st.button("Scan Chart", type="primary"):
+    button_label = "Scan Charts" if len(uploaded_files) > 1 else "Scan Chart"
+    if st.button(button_label, type="primary"):
         if not api_key:
             st.error("Please configure your GEMINI_API_KEY secret in settings.")
         else:
-            with st.spinner("Scanning structure & pattern..."):
+            with st.spinner("Scanning structure & multi-timeframe context..."):
                 try:
-                    img = raw_image.copy()
-                    if max(img.size) > 1280:
-                        img.thumbnail((1280, 1280), Image.Resampling.LANCZOS)
-                    buffer = io.BytesIO()
-                    img.convert("RGB").save(buffer, format="JPEG", quality=80)
-                    optimized_img = Image.open(buffer)
-
                     client = genai.Client(api_key=api_key)
+                    
+                    # Pack all images followed by the prompt
+                    content_payload = optimized_images + [JSON_PROMPT]
+                    
                     response = client.models.generate_content(
                         model='gemini-3.8-flash',
-                        contents=[optimized_img, JSON_PROMPT],
+                        contents=content_payload,
                         config=types.GenerateContentConfig(
                             temperature=0.1,
                             max_output_tokens=800,
