@@ -4,6 +4,7 @@ from google.genai import types
 from PIL import Image
 import json
 import io
+import time
 
 st.set_page_config(
     page_title="Scanner Terminal",
@@ -93,19 +94,26 @@ if uploaded_files:
                         response_mime_type="application/json"
                     )
 
-                    # Stable production tier endpoint with auto-fallback to pro
-                    try:
-                        response = client.models.generate_content(
-                            model='gemini-1.5-flash',
-                            contents=content_payload,
-                            config=config
-                        )
-                    except Exception:
-                        response = client.models.generate_content(
-                            model='gemini-1.5-pro',
-                            contents=content_payload,
-                            config=config
-                        )
+                    # Multi-attempt backoff handler specifically for gemini-3.8-flash 503 spikes
+                    response = None
+                    last_err = None
+                    for attempt in range(3):
+                        try:
+                            response = client.models.generate_content(
+                                model='gemini-3.8-flash',
+                                contents=content_payload,
+                                config=config
+                            )
+                            if response and response.text:
+                                break
+                        except Exception as e:
+                            last_err = e
+                            if "503" in str(e) or "UNAVAILABLE" in str(e):
+                                time.sleep(2 * (attempt + 1))
+                            else:
+                                raise e
+                    else:
+                        raise last_err
 
                     clean = response.text.strip().replace("```json", "").replace("```", "")
                     data = json.loads(clean)
