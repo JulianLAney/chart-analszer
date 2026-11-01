@@ -101,24 +101,28 @@ if uploaded_files:
                             response_mime_type="application/json"
                         )
                     )
+                    
+client = genai.Client(api_key=api_key)
+                    content_payload = optimized_images + [JSON_PROMPT]
+                    config = types.GenerateContentConfig(
+                        temperature=0.1,
+                        max_output_tokens=800,
+                        response_mime_type="application/json"
+                    )
 
-                    clean = response.text.strip().replace("```json", "").replace("```", "")
-                    data = json.loads(clean)
-
-                    signal = str(data.get("signal", "HOLD")).upper()
-                    if "BUY" in signal:
-                        badge_style = "badge-buy"
-                        icon_symbol = "↗"
-                        display_signal = "Buy"
-                    elif "SELL" in signal:
-                        badge_style = "badge-sell"
-                        icon_symbol = "↘"
-                        display_signal = "Sell"
-                    else:
-                        badge_style = "badge-hold"
-                        icon_symbol = "⏸"
-                        display_signal = "Hold"
-
+                    # Try primary model; fall back automatically if 503 overloaded
+                    try:
+                        response = client.models.generate_content(
+                            model='gemini-3.8-flash',
+                            contents=content_payload,
+                            config=config
+                        )
+                    except Exception:
+                        response = client.models.generate_content(
+                            model='gemini-2.5-flash',
+                            contents=content_payload,
+                            config=config
+                        )
                     pattern = data.get("pattern_detected", "Structure Identified")
                     st.markdown(f'<div style="text-align:center; margin-bottom: 12px;"><span class="status-pill">✔ Pattern detected: {pattern}</span></div>', unsafe_allow_html=True)
 
