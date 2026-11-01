@@ -4,7 +4,6 @@ from google.genai import types
 from PIL import Image
 import json
 import io
-import time
 
 st.set_page_config(
     page_title="Scanner Terminal",
@@ -94,23 +93,19 @@ if uploaded_files:
                         response_mime_type="application/json"
                     )
 
-                    # Exclusively use gemini-3.8-flash with an automatic 2-second retry if busy
-                    response = None
-                    last_err = None
-                    for attempt in range(2):
-                        try:
-                            response = client.models.generate_content(
-                                model='gemini-3.8-flash',
-                                contents=content_payload,
-                                config=config
-                            )
-                            break
-                        except Exception as e:
-                            last_err = e
-                            if attempt == 0:
-                                time.sleep(2)
-                            else:
-                                raise last_err
+                    # Stable production tier endpoint with auto-fallback to pro
+                    try:
+                        response = client.models.generate_content(
+                            model='gemini-1.5-flash',
+                            contents=content_payload,
+                            config=config
+                        )
+                    except Exception:
+                        response = client.models.generate_content(
+                            model='gemini-1.5-pro',
+                            contents=content_payload,
+                            config=config
+                        )
 
                     clean = response.text.strip().replace("```json", "").replace("```", "")
                     data = json.loads(clean)
