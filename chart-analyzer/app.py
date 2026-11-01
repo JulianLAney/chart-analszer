@@ -46,10 +46,9 @@ st.markdown('<div style="text-align:center;"><span class="status-pill">● Patte
 
 api_key = st.secrets.get("GEMINI_API_KEY", "")
 
-# Multi-file uploader for multi-timeframe analysis
 uploaded_files = st.file_uploader("Upload Chart Screenshot(s)", type=["png", "jpg", "jpeg"], accept_multiple_files=True)
 
-JSON_PROMPT = """Analyze the provided chart image(s) across any visible timeframes and return ONLY a valid JSON object matching this schema (no code blocks, no backticks, no markdown):
+JSON_PROMPT = """Analyze the provided chart image(s) across all visible timeframes and return ONLY a valid JSON object matching this schema (no code blocks, no backticks, no markdown):
 {
   "pattern_detected": "Identified pattern, structure, or setup name",
   "signal": "HOLD" or "BUY" or "SELL",
@@ -65,13 +64,11 @@ JSON_PROMPT = """Analyze the provided chart image(s) across any visible timefram
 if uploaded_files:
     optimized_images = []
     
-    # Render all uploaded screenshots inside the styled viewport container
     st.markdown('<div class="viewport-box">', unsafe_allow_html=True)
     for idx, file in enumerate(uploaded_files):
         img = Image.open(file)
         st.image(img, caption=f"Chart {idx + 1}" if len(uploaded_files) > 1 else None, use_container_width=True)
         
-        # Optimize dimensions and compress in memory to maintain low latency
         img_copy = img.copy()
         if max(img_copy.size) > 1280:
             img_copy.thumbnail((1280, 1280), Image.Resampling.LANCZOS)
@@ -88,29 +85,15 @@ if uploaded_files:
             with st.spinner("Scanning structure & multi-timeframe context..."):
                 try:
                     client = genai.Client(api_key=api_key)
-                    
-                    # Pack all images followed by the prompt
                     content_payload = optimized_images + [JSON_PROMPT]
                     
-                    response = client.models.generate_content(
-                        model='gemini-3.8-flash',
-                        contents=content_payload,
-                        config=types.GenerateContentConfig(
-                            temperature=0.1,
-                            max_output_tokens=800,
-                            response_mime_type="application/json"
-                        )
-                    )
-                    
-client = genai.Client(api_key=api_key)
-                    content_payload = optimized_images + [JSON_PROMPT]
                     config = types.GenerateContentConfig(
                         temperature=0.1,
                         max_output_tokens=800,
                         response_mime_type="application/json"
                     )
 
-                    # Try primary model; fall back automatically if 503 overloaded
+                    # Try primary model; automatically fall back if high demand/503
                     try:
                         response = client.models.generate_content(
                             model='gemini-3.8-flash',
@@ -123,6 +106,24 @@ client = genai.Client(api_key=api_key)
                             contents=content_payload,
                             config=config
                         )
+
+                    clean = response.text.strip().replace("```json", "").replace("```", "")
+                    data = json.loads(clean)
+
+                    signal = str(data.get("signal", "HOLD")).upper()
+                    if "BUY" in signal:
+                        badge_style = "badge-buy"
+                        icon_symbol = "↗"
+                        display_signal = "Buy"
+                    elif "SELL" in signal:
+                        badge_style = "badge-sell"
+                        icon_symbol = "↘"
+                        display_signal = "Sell"
+                    else:
+                        badge_style = "badge-hold"
+                        icon_symbol = "⏸"
+                        display_signal = "Hold"
+
                     pattern = data.get("pattern_detected", "Structure Identified")
                     st.markdown(f'<div style="text-align:center; margin-bottom: 12px;"><span class="status-pill">✔ Pattern detected: {pattern}</span></div>', unsafe_allow_html=True)
 
